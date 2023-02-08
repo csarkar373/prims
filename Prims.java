@@ -3,15 +3,39 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+
 public class Prims {
+    private static class Edge {
+        int from;
+        int to;
+
+        public Edge(int from, int to) {
+            this.from = from;
+            this.to = to;
+        }
+
+        @Override public String toString() {
+            return "(" + from + "," + to + ")";
+        }
+    }
     int [] [] matrix;
     int [] [] mstMatrix;
     Set<Integer> visited;
+
+    int [] weights;
 
     public Prims(int[][] matrix) {
         this.matrix = matrix;
         this.mstMatrix = new int[matrix.length][matrix.length];
         this.visited = new HashSet<>();
+        this.weights = new int[matrix.length];
+    }
+
+    public boolean hasEdge(int a, int b) {
+        if (a == b) return false;
+        boolean answer =  matrix[a][b] < Integer.MAX_VALUE &&
+                matrix[a][b] > -1;
+        return answer;
     }
 
     private void mst(int startingNode) {
@@ -21,30 +45,33 @@ public class Prims {
                 mstMatrix[r][c] = -1;
             }
         }
-        // create a map to map each node to a weight
-        Map<Integer, Integer> map = new HashMap<>();
+        System.out.println("initial MST Matrix");
+        printMatrix(mstMatrix);
 
-        // set all the weights to infinity, initially
-        for (int i = 0; i < mstMatrix.length; i++) {
-            map.put(i, Integer.MAX_VALUE);
-        }
+        // set the starting node to visited so first edge will be added there
+        visited.add(startingNode);
 
-        // set weight of starting node to zero so it will be picked first
-        map.put(startingNode, 0);
-
+        // while not all nodes have been visited
         while (visited.size() != mstMatrix.length) {
-            int minKeyValue = Integer.MAX_VALUE;
-            int minNode = -1;
-            // pick a node which has not been visited
-            // had has min key value
-            for (int i=0; i < mstMatrix.length; ++i) {
-                if (!visited.contains(i) && map.get(i) < minKeyValue) {
-                    minKeyValue = map.get(i);
-                    minNode = i;
+            Edge nextEdge = null;
+            int minEdgeValue = Integer.MAX_VALUE;
+            for (Integer visitedNode : visited) {
+                for (int i = 0; i < matrix.length; i++) {
+                    if (!visited.contains(i)) {
+                        if (hasEdge(visitedNode, i) && matrix[visitedNode][i] < minEdgeValue) {
+                            minEdgeValue = matrix[visitedNode][i];
+                            nextEdge = new Edge(visitedNode, i);
+                        }
+                    }
                 }
             }
-            visited.add(minNode);
-
+            System.out.println("Next edge to be added is: " + nextEdge);
+            visited.add(nextEdge.to);
+            mstMatrix[nextEdge.from][nextEdge.to] = matrix[nextEdge.from][nextEdge.to];
+            mstMatrix[nextEdge.to][nextEdge.from] = matrix[nextEdge.to][nextEdge.from];
+            printMatrix(mstMatrix);
+            System.out.println("visited: " + visited);
+            System.out.println();
         }
     }
 
@@ -74,8 +101,8 @@ public class Prims {
         };
 
         Prims p = new Prims(matrix);
-        p.mst(0);
         printMatrix(p.matrix);
+        p.mst(0);
         printMatrix(p.mstMatrix);
     }
 }
