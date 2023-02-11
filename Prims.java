@@ -38,6 +38,25 @@ public class Prims {
         return answer;
     }
 
+    private Edge nextEdgeToVisit() {
+        Edge nextEdge = null;
+        // no more nodes to visit
+        if (visited.size() == mstMatrix.length)
+            return null;
+        int minEdgeValue = Integer.MAX_VALUE;
+        for (Integer visitedNode : visited) {
+            for (int i = 0; i < matrix.length; i++) {
+                if (!visited.contains(i)) {
+                    if (hasEdge(visitedNode, i) && matrix[visitedNode][i] < minEdgeValue) {
+                        minEdgeValue = matrix[visitedNode][i];
+                        nextEdge = new Edge(visitedNode, i);
+                    }
+                }
+            }
+        }
+        return nextEdge;
+    }
+
     private void mst(int startingNode) {
         // initial MST has no edges
         for (int r = 0; r < mstMatrix.length; r++) {
@@ -52,19 +71,7 @@ public class Prims {
         visited.add(startingNode);
 
         // while not all nodes have been visited
-        while (visited.size() != mstMatrix.length) {
-            Edge nextEdge = null;
-            int minEdgeValue = Integer.MAX_VALUE;
-            for (Integer visitedNode : visited) {
-                for (int i = 0; i < matrix.length; i++) {
-                    if (!visited.contains(i)) {
-                        if (hasEdge(visitedNode, i) && matrix[visitedNode][i] < minEdgeValue) {
-                            minEdgeValue = matrix[visitedNode][i];
-                            nextEdge = new Edge(visitedNode, i);
-                        }
-                    }
-                }
-            }
+        for (Edge nextEdge = nextEdgeToVisit(); nextEdge != null; nextEdge = nextEdgeToVisit() ) {
             System.out.println("Next edge to be added is: " + nextEdge);
             visited.add(nextEdge.to);
             mstMatrix[nextEdge.from][nextEdge.to] = matrix[nextEdge.from][nextEdge.to];
@@ -72,7 +79,7 @@ public class Prims {
             printMatrix(mstMatrix);
             System.out.println("visited: " + visited);
             System.out.println();
-        }
+        } 
     }
 
     public static void printMatrix(int[][] a) {
